@@ -1,23 +1,34 @@
-version: '3.8'
-
 services:
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis-data:/data
-    ports:
-      - "6379:6379"
-
-  weprotocol:
+  wic-go:
     build: .
-    depends_on:
-      - redis
+    container_name: wic-go
+    restart: unless-stopped
     ports:
-      - "8005:8058"
+      - "8058:8058"
+      - "8088:8088"
     volumes:
       - ./conf:/usr/wic-go/conf          # your host config (including the redislink change)
       - weprotocol-data:/usr/wic-go      # persists app data + binary (as you requested)
+    environment:
+      - TZ=America/Toronto
+    depends_on:
+      - redis
+    networks:
+      - wic-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: wic-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - wic-network
 
 volumes:
   redis-data:
   weprotocol-data:
+
+networks:
+  wic-network:
+    driver: bridge
