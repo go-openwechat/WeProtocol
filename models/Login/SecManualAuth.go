@@ -1,6 +1,7 @@
 package Login
 
 import (
+	"fmt"
 	"time"
 	"wechatdll/Algorithm"
 	"wechatdll/Cilent/mm"
@@ -153,12 +154,28 @@ func SecManualAuth(Data *comm.LoginData) (mm.UnifyAuthResponse, []byte, []byte, 
 	}
 	reqdata, err := proto.Marshal(requset)
 	// log.Println(hex.EncodeToString(reqdata))
+	// Catch the marshal error so we don't pass a nil slice to the packer!
+	if err != nil {
+		return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("SecManualLoginRequest marshal failed: %v", err)
+	}
+	if len(reqdata) == 0 {
+		return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("marshaled reqdata is empty")
+	}
+
 	// hec := InitHec(Data)
 	hec = &Algorithm.Client{}
 	hec.Init("IOS")
 	hecData := hec.HybridEcdhPackIosEn(252, 0, nil, reqdata)
 
-	recvData, _ := httpclient.MMtlsPost(Data.ShortHost, "/cgi-bin/micromsg-bin/secmanualauth", hecData, Data.Proxy)
+	recvData, err := httpclient.MMtlsPost(Data.ShortHost, "/cgi-bin/micromsg-bin/secmanualauth", hecData, Data.Proxy)
+	// Prevent panic if MMTLS fails or returns empty data
+	if err != nil {
+		return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("MMtlsPost error: %v", err)
+	}
+	if len(recvData) == 0 {
+		return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("MMtlsPost returned empty data")
+	}
+
 	ph1 := hec.HybridEcdhPackIosUn(recvData)
 	loginRes := mm.UnifyAuthResponse{}
 	err = proto.Unmarshal(ph1.Data, &loginRes)

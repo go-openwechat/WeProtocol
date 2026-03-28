@@ -111,7 +111,13 @@ func (h *Client) HybridEcdhPackIosEn2(Cgi, Uin uint32, Cookies, Data, loginecdhk
 	header.Write(encryptdata)
 	return header.Bytes()
 }
+
 func (h *Client) HybridEcdhPackIosUn(Data []byte) *PacketHeader {
+	// Defensive check to prevent index out of bounds panic
+	if len(Data) == 0 {
+		return &PacketHeader{}
+	}
+
 	var ph PacketHeader
 	var body []byte
 	var nCur int64
@@ -176,6 +182,11 @@ func (h *Client) HybridEcdhPackAndroidEn(cmdid, cert, uin uint32, cookie, Data [
 }
 
 func (h *Client) HybridEcdhPackAndroidUn(Data []byte) *PacketHeader {
+	// Defensive check to prevent index out of bounds panic
+	if len(Data) == 0 {
+		return &PacketHeader{}
+	}
+
 	var ph PacketHeader
 	readHeader := bytes.NewReader(Data)
 	binary.Read(readHeader, binary.LittleEndian, &ph.PacketCryptType)

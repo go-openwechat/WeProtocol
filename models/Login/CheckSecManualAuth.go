@@ -11,6 +11,8 @@ import (
 	"wechatdll/Cilent/mm"
 	"wechatdll/comm"
 	"wechatdll/models"
+
+	"github.com/golang/protobuf/proto"
 )
 
 func CheckSecManualAuth(Data *comm.LoginData, ShortHost string) models.ResponseResult {
@@ -38,7 +40,15 @@ func CheckSecManualAuth(Data *comm.LoginData, ShortHost string) models.ResponseR
 
 	// Prevent nil DeviceToken for fresh QR login (avoids downstream Pack.go panic at header index)
 	if Data.DeviceToken == nil {
-		Data.DeviceToken = &mm.TrustResponse{} // minimal valid placeholder
+		Data.DeviceToken = &mm.TrustResponse{
+			TrustResponseData: &mm.TrustResponseData{
+				DeviceToken: proto.String("QR"), // Minimal valid placeholder
+			},
+		}
+	} else if Data.DeviceToken.TrustResponseData == nil {
+		Data.DeviceToken.TrustResponseData = &mm.TrustResponseData{
+			DeviceToken: proto.String("QR"),
+		}
 	}
 
 	loginRes, prikey, pubkey, Cookie, DeviceToken, err := SecManualAuth(Data)
