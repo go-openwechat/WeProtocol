@@ -83,8 +83,12 @@ func CheckSecManualAuth(Data *comm.LoginData, ShortHost string) models.ResponseR
 		Data.Serversessionkey = loginRes.GetAuthSectResp().GetServerSessionKey().GetBuffer()
 		Data.Clientsessionkey = loginRes.GetAuthSectResp().GetClientSessionKey().GetBuffer()
 		Data.DeviceToken = DeviceToken
-		Data.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
-		Data.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+		if len(loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist) > 0 {
+			Data.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
+		}
+		if len(loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist) > 0 {
+			Data.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+		}
 		Data.RsaPublicKey = pubkey
 		Data.RsaPrivateKey = prikey
 		// 当前时间
@@ -143,7 +147,9 @@ func CheckSecManualAuth(Data *comm.LoginData, ShortHost string) models.ResponseR
 				}
 			}
 		}
-		return CheckSecManualAuth(Data, Wx_newshort_Host.Front().Value.(string))
+		if Wx_newshort_Host.Len() > 0 {
+			return CheckSecManualAuth(Data, Wx_newshort_Host.Front().Value.(string))
+		}
 	}
 
 	//否则就是包有问题

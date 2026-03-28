@@ -127,23 +127,41 @@ func (h *Client) HybridEcdhPackIosUn(Data []byte) *PacketHeader {
 	if bfbit == byte(0xbf) {
 		nCur += 1
 	}
+	if nCur >= int64(len(Data)) {
+		return &ph
+	}
 	nLenHeader := Data[nCur] >> 2
 	nCur += 1
+	if nCur >= int64(len(Data)) {
+		return &ph
+	}
 	nLenCookie := Data[nCur] & 0xf
 	nCur += 1
 	nCur += 4
 	srcreader.Seek(nCur, io.SeekStart)
 	binary.Read(srcreader, binary.BigEndian, &ph.Uin)
 	nCur += 4
+	if nCur+int64(nLenCookie) > int64(len(Data)) {
+		return &ph
+	}
 	cookie_temp := Data[nCur : nCur+int64(nLenCookie)]
 	ph.Cookies = cookie_temp
 	nCur += int64(nLenCookie)
+	if nCur >= int64(len(Data)) {
+		return &ph
+	}
 	cgidata := Data[nCur:]
 	_, nSize := proto.DecodeVarint(cgidata)
 	nCur += int64(nSize)
+	if nCur >= int64(len(Data)) {
+		return &ph
+	}
 	LenProtobufData := Data[nCur:]
 	_, nLenProtobuf := proto.DecodeVarint(LenProtobufData)
 	nCur += int64(nLenProtobuf)
+	if int64(nLenHeader) > int64(len(Data)) {
+		return &ph
+	}
 	body = Data[nLenHeader:]
 	protobufdata := h.decryptoIOS(body)
 	ph.Data = protobufdata
