@@ -315,7 +315,10 @@ func SecManualAuthAndroid(Data *comm.LoginData) (mm.UnifyAuthResponse, []byte, [
 
 	recvData, err := httpclient.MMtlsPost(Data.ShortHost, "/cgi-bin/micromsg-bin/secmanualauth", hecData, Data.Proxy)
 	if err != nil {
-		return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, err
+		return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("MMtlsPost error: %v", err)
+	}
+	if len(recvData) == 0 {
+		return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("MMtlsPost returned empty data")
 	}
 	ph1 := hec.HybridEcdhPackIosUn(recvData)
 

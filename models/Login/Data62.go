@@ -35,6 +35,13 @@ func Data62(Data Data62LoginReq, domain string) models.ResponseResult {
 	} else {
 		D = UpdateiPhoneLoginData(D, reqDataLogin)
 	}
+	if D.DeviceToken == nil {
+		D.DeviceToken = &mm.TrustResponse{
+			TrustResponseData: &mm.TrustResponseData{
+				DeviceToken: proto.String(""), // Minimal valid placeholder
+			},
+		}
+	}
 	if domain == "" {
 		domain = D.ShortHost
 	}
