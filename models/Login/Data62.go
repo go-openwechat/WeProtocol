@@ -35,6 +35,13 @@ func Data62(Data Data62LoginReq, domain string) models.ResponseResult {
 	} else {
 		D = UpdateiPhoneLoginData(D, reqDataLogin)
 	}
+	if D.DeviceToken == nil {
+		D.DeviceToken = &mm.TrustResponse{
+			TrustResponseData: &mm.TrustResponseData{
+				DeviceToken: proto.String(""), // Minimal valid placeholder
+			},
+		}
+	}
 	if domain == "" {
 		domain = D.ShortHost
 	}
@@ -270,8 +277,12 @@ func Data62(Data Data62LoginReq, domain string) models.ResponseResult {
 		D.Autoauthkeylen = int32(loginRes.GetAuthSectResp().GetAutoAuthKey().GetILen())
 		D.Serversessionkey = loginRes.GetAuthSectResp().GetServerSessionKey().GetBuffer()
 		D.Clientsessionkey = loginRes.GetAuthSectResp().GetClientSessionKey().GetBuffer()
-		D.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
-		D.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+			if len(loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist) > 0 {
+				D.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
+			}
+			if len(loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist) > 0 {
+				D.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+			}
 		D.RsaPublicKey = pubkey
 		D.RsaPrivateKey = prikey
 		// 更新代理IP
@@ -300,8 +311,12 @@ func Data62(Data Data62LoginReq, domain string) models.ResponseResult {
 
 	//30系列转向
 	if loginRes.GetBaseResponse().GetRet() == -301 {
-		D.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
-		D.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+		if len(loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist) > 0 {
+			D.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
+		}
+		if len(loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist) > 0 {
+			D.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+		}
 		D.MmtlsKey = nil
 		// 更新代理IP
 		if Data.Proxy.ProxyIp != "" && Data.Proxy.ProxyIp != "String" {
