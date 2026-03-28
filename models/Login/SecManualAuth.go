@@ -57,15 +57,26 @@ func SecManualAuth(Data *comm.LoginData) (mm.UnifyAuthResponse, []byte, []byte, 
 
 	ccDataseq, _ := proto.Marshal(ccData)
 
+	// Build DeviceTokenCCD safely for both normal and fresh QR login paths
+	// This prevents zero-length buffer that causes index out of range in Pack.go:124
+	deviceTokenStr := safeDeviceToken(Data)
+	if deviceTokenStr == "" {
+		deviceTokenStr = "QR" // minimal non-empty value required by packer for QR flow
+	}
 	DeviceTokenCCD := &mm.DeviceToken{
 		Version:   proto.String(""),
 		Encrypted: proto.Uint32(1),
 		Data: &mm.SKBuiltinStringT{
-			String_: proto.String(Data.DeviceToken.GetTrustResponseData().GetDeviceToken()),
+			String_: proto.String(deviceTokenStr),
 		},
 		TimeStamp: proto.Uint32(uint32(time.Now().Unix())),
 		Optype:    proto.Uint32(2),
 		Uin:       proto.Uint32(0),
+	}
+	// For fresh QR login (Data.DeviceToken is nil), ensure we have a non-empty buffer to prevent Pack.go:124 index out of range
+	if Data.DeviceToken == nil || Data.DeviceToken.GetTrustResponseData() == nil {
+		// Use a minimal but valid device token string for QR flow (prevents zero-length header in packer)
+		DeviceTokenCCD.Data.String_ = proto.String("QR")
 	}
 	DeviceTokenCCDPB, _ := proto.Marshal(DeviceTokenCCD)
 
@@ -157,6 +168,15 @@ func SecManualAuth(Data *comm.LoginData) (mm.UnifyAuthResponse, []byte, []byte, 
 	}
 
 	return loginRes, prikey, pubkey, ph1.Cookies, &mm.TrustResponse{}, nil
+}
+
+// safeDeviceToken prevents nil dereference + zero-length buffer panic during fresh QR login
+// (Data.DeviceToken is not populated in the CheckUuid → SecManualAuth path for new logins)
+func safeDeviceToken(Data *comm.LoginData) string {
+	if Data == nil || Data.DeviceToken == nil || Data.DeviceToken.GetTrustResponseData() == nil {
+		return "" // return empty so caller can set safe default
+	}
+	return Data.DeviceToken.GetTrustResponseData().GetDeviceToken()
 }
 
 func SecManualAuthAndroid(Data *comm.LoginData) (mm.UnifyAuthResponse, []byte, []byte, []byte, *mm.TrustResponse, error) {

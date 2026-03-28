@@ -6,8 +6,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func padding(src []byte, blocksize int) []byte {
@@ -231,6 +232,9 @@ func AesGcmEncryptWithCompressZlib(key []byte, plaintext []byte, nonce []byte, a
 }
 
 func AesGcmDecryptWithcompressZlib(key []byte, ciphertext []byte, aad []byte) []byte {
+	if len(ciphertext) < 0x1c {
+		return []byte{}
+	}
 	ciphertextinput := ciphertext[:len(ciphertext)-0x1c]
 	endatanonce := ciphertext[len(ciphertext)-0x1c : len(ciphertext)-0x10]
 	data := new(bytes.Buffer)

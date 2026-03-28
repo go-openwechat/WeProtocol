@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"wechatdll/Algorithm"
+	"wechatdll/Cilent/mm"
 	"wechatdll/comm"
 	"wechatdll/models"
 )
@@ -22,18 +23,24 @@ func CheckSecManualAuth(Data *comm.LoginData, ShortHost string) models.ResponseR
 	if Data.Wxid != "" {
 		Datas, err := comm.GetLoginata(Data.Wxid, nil)
 		if err != nil || Datas == nil || Datas.Uuid == "" {
-		}else{
-			Data.DeviceInfo=Datas.DeviceInfo
-			Data.RomModel=Datas.RomModel
-			Data.OsVersion=Datas.OsVersion
-			Data.ClientVersion=Datas.ClientVersion
-			Data.DeviceType=Datas.DeviceType
-			Data.DeviceToken=Datas.DeviceToken
+		} else {
+			Data.DeviceInfo = Datas.DeviceInfo
+			Data.RomModel = Datas.RomModel
+			Data.OsVersion = Datas.OsVersion
+			Data.ClientVersion = Datas.ClientVersion
+			Data.DeviceType = Datas.DeviceType
+			Data.DeviceToken = Datas.DeviceToken
 		}
 	}
 	jsonData, err := json.Marshal(Data)
 	fmt.Println("登入数据")
 	fmt.Println(string(jsonData))
+
+	// Prevent nil DeviceToken for fresh QR login (avoids downstream Pack.go panic at header index)
+	if Data.DeviceToken == nil {
+		Data.DeviceToken = &mm.TrustResponse{} // minimal valid placeholder
+	}
+
 	loginRes, prikey, pubkey, Cookie, DeviceToken, err := SecManualAuth(Data)
 
 	if err != nil {
