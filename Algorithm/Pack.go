@@ -114,7 +114,7 @@ func (h *Client) HybridEcdhPackIosEn2(Cgi, Uin uint32, Cookies, Data, loginecdhk
 
 func (h *Client) HybridEcdhPackIosUn(Data []byte) *PacketHeader {
 	// Defensive check to prevent index out of bounds panic
-	if len(Data) == 0 {
+	if len(Data) < 2 {
 		return &PacketHeader{}
 	}
 
@@ -138,6 +138,9 @@ func (h *Client) HybridEcdhPackIosUn(Data []byte) *PacketHeader {
 	nLenCookie := Data[nCur] & 0xf
 	nCur += 1
 	nCur += 4
+	if nCur+4 > int64(len(Data)) {
+		return &ph
+	}
 	srcreader.Seek(nCur, io.SeekStart)
 	binary.Read(srcreader, binary.BigEndian, &ph.Uin)
 	nCur += 4
@@ -159,7 +162,7 @@ func (h *Client) HybridEcdhPackIosUn(Data []byte) *PacketHeader {
 	LenProtobufData := Data[nCur:]
 	_, nLenProtobuf := proto.DecodeVarint(LenProtobufData)
 	nCur += int64(nLenProtobuf)
-	if int64(nLenHeader) > int64(len(Data)) {
+	if int64(nLenHeader) > int64(len(Data)) || int64(nLenHeader) < 0 {
 		return &ph
 	}
 	body = Data[nLenHeader:]
@@ -201,7 +204,7 @@ func (h *Client) HybridEcdhPackAndroidEn(cmdid, cert, uin uint32, cookie, Data [
 
 func (h *Client) HybridEcdhPackAndroidUn(Data []byte) *PacketHeader {
 	// Defensive check to prevent index out of bounds panic
-	if len(Data) == 0 {
+	if len(Data) < 11 {
 		return &PacketHeader{}
 	}
 
@@ -211,11 +214,16 @@ func (h *Client) HybridEcdhPackAndroidUn(Data []byte) *PacketHeader {
 	binary.Read(readHeader, binary.LittleEndian, &ph.Flag)
 	cookieLen := (ph.Flag >> 8) & 0x0f
 	headerLen := (ph.Flag & 0xff) >> 2
+	if int(headerLen) > len(Data) || int(headerLen)+int(cookieLen) > len(Data) {
+		return &ph
+	}
 	ph.Cookies = make([]byte, cookieLen)
 	binary.Read(readHeader, binary.BigEndian, &ph.RetCode)
 	binary.Read(readHeader, binary.BigEndian, &ph.UICrypt)
 	binary.Read(readHeader, binary.LittleEndian, &ph.Cookies)
-	ph.Data = h.decryptAndroid(Data[headerLen:])
+	if int(headerLen) < len(Data) {
+		ph.Data = h.decryptAndroid(Data[headerLen:])
+	}
 	return &ph
 }
 
@@ -303,6 +311,9 @@ func Pack(src []byte, cgi int, uin uint32, sessionkey, cookies, clientsessionkey
 }
 
 func UnpackBusinessPacket(src []byte, key []byte, uin uint32, cookie *[]byte) []byte {
+	if len(src) < 2 {
+		return nil
+	}
 	var nCur int64
 	var bfbit byte
 	srcreader := bytes.NewReader(src)
@@ -310,24 +321,45 @@ func UnpackBusinessPacket(src []byte, key []byte, uin uint32, cookie *[]byte) []
 	if bfbit == byte(0xbf) {
 		nCur += 1
 	}
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	nLenHeader := src[nCur] >> 2
 	bUseCompressed := src[nCur] & 0x3
 	nCur += 1
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	nLenCookie := src[nCur] & 0xf
 	nCur += 1
 	nCur += 4
+	if nCur+4 > int64(len(src)) {
+		return nil
+	}
 	srcreader.Seek(nCur, io.SeekStart)
 	binary.Read(srcreader, binary.BigEndian, &uin)
 	nCur += 4
+	if nCur+int64(nLenCookie) > int64(len(src)) {
+		return nil
+	}
 	cookie_temp := src[nCur : nCur+int64(nLenCookie)]
 	*cookie = cookie_temp
 	nCur += int64(nLenCookie)
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	cgidata := src[nCur:]
 	_, nSize := proto.DecodeVarint(cgidata)
 	nCur += int64(nSize)
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	LenProtobufData := src[nCur:]
 	_, nLenProtobuf := proto.DecodeVarint(LenProtobufData)
 	nCur += int64(nLenProtobuf)
+	if int64(nLenHeader) > int64(len(src)) {
+		return nil
+	}
 	body := src[nLenHeader:]
 	if bUseCompressed == 1 {
 		protobufData := DecompressAndAesDecrypt(body, key)
@@ -339,6 +371,9 @@ func UnpackBusinessPacket(src []byte, key []byte, uin uint32, cookie *[]byte) []
 }
 
 func UnpackBusinessPacketWithAesGcm(src []byte, uin uint32, cookie *[]byte, Serversessionkey []byte) []byte {
+	if len(src) < 2 {
+		return nil
+	}
 	var nCur int64
 	var bfbit byte
 	srcreader := bytes.NewReader(src)
@@ -346,23 +381,44 @@ func UnpackBusinessPacketWithAesGcm(src []byte, uin uint32, cookie *[]byte, Serv
 	if bfbit == byte(0xbf) {
 		nCur += 1
 	}
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	nLenHeader := src[nCur] >> 2
 	nCur += 1
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	nLenCookie := src[nCur] & 0xf
 	nCur += 1
 	nCur += 4
+	if nCur+4 > int64(len(src)) {
+		return nil
+	}
 	srcreader.Seek(nCur, io.SeekStart)
 	binary.Read(srcreader, binary.BigEndian, &uin)
 	nCur += 4
+	if nCur+int64(nLenCookie) > int64(len(src)) {
+		return nil
+	}
 	cookie_temp := src[nCur : nCur+int64(nLenCookie)]
 	*cookie = cookie_temp
 	nCur += int64(nLenCookie)
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	cgidata := src[nCur:]
 	_, nSize := proto.DecodeVarint(cgidata)
 	nCur += int64(nSize)
+	if nCur >= int64(len(src)) {
+		return nil
+	}
 	LenProtobufData := src[nCur:]
 	_, nLenProtobuf := proto.DecodeVarint(LenProtobufData)
 	nCur += int64(nLenProtobuf)
+	if int64(nLenHeader) > int64(len(src)) {
+		return nil
+	}
 	body := src[nLenHeader:]
 	protobufdata := AesGcmDecryptWithcompressZlib(Serversessionkey, body, nil)
 	return protobufdata

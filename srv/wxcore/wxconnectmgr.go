@@ -100,6 +100,9 @@ func (wm *WXConnectMgr) InitAutoHeartBeat() {
 	// 记录已经判断的wxid
 	var wxidList []string = make([]string, 0)
 	for _, v := range AutoHeartBeatList {
+		if len(v) == 0 {
+			continue
+		}
 		item := v[0]
 		// ["[xyuh111],[果汁] 发送心跳成功，下次心跳时间：2025-01-11 17:12:34"]
 		// 去第一条是否包含“发送心跳成功”

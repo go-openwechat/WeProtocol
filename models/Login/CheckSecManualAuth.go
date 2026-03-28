@@ -83,11 +83,13 @@ func CheckSecManualAuth(Data *comm.LoginData, ShortHost string) models.ResponseR
 		Data.Serversessionkey = loginRes.GetAuthSectResp().GetServerSessionKey().GetBuffer()
 		Data.Clientsessionkey = loginRes.GetAuthSectResp().GetClientSessionKey().GetBuffer()
 		Data.DeviceToken = DeviceToken
-		if len(loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist) > 0 {
-			Data.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
-		}
-		if len(loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist) > 0 {
-			Data.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+		if loginRes.NetworkSectResp != nil && loginRes.NetworkSectResp.BuiltinIplist != nil {
+			if len(loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist) > 0 && loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host != nil {
+				Data.ShortHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.ShortConnectIplist[0].Host)
+			}
+			if len(loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist) > 0 && loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host != nil {
+				Data.LongHost = comm.Rmu0000(*loginRes.NetworkSectResp.BuiltinIplist.LongConnectIplist[0].Host)
+			}
 		}
 		Data.RsaPublicKey = pubkey
 		Data.RsaPrivateKey = prikey

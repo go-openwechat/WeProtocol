@@ -263,7 +263,9 @@ func AndroidA16Login(Data A16LoginParam, domain string) models.ResponseResult {
 				}
 			}
 		}
-		return AndroidA16Login(Data, Wx_newshort_Host.Front().Value.(string))
+		if Wx_newshort_Host.Len() > 0 {
+			return AndroidA16Login(Data, Wx_newshort_Host.Front().Value.(string))
+		}
 	}
 	/*
 		// 自动过滑块
@@ -536,7 +538,9 @@ func AndroidA16Login1(Data A16LoginParam, domain string) models.ResponseResult {
 				}
 			}
 		}
-		return AndroidA16Login1(Data, Wx_newshort_Host.Front().Value.(string))
+		if Wx_newshort_Host.Len() > 0 {
+			return AndroidA16Login1(Data, Wx_newshort_Host.Front().Value.(string))
+		}
 	}
 
 	// 自动过滑块

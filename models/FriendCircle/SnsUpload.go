@@ -328,6 +328,9 @@ func SendCdnSnsVideoDownloadReuqestPiece(userInfo *comm.LoginData,info *cdnInfo,
 	// 打包请求
 	sendData := clientsdk.PackCdnSnsVideoDownloadRequest(request)
 	// 连接Cdn服务器
+	if info == nil || info.snsDns == nil || len(info.snsDns.ZoneIPList) == 0 || len(info.snsDns.ZoneIPPortList) == 0 || len(info.snsDns.ZoneIPPortList[0].PortList) == 0 {
+		return nil, errors.New("CDN DNS info is incomplete")
+	}
 	serverIP := *info.snsDns.ZoneIPList[0].String_
 	serverPort := info.snsDns.ZoneIPPortList[0].PortList[0]
 	conn, err := ConnectCdnServer(serverIP, serverPort)
