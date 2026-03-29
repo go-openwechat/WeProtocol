@@ -15,11 +15,11 @@ var MmtlsShortHost = "extshort.weixin.qq.com" // "extshort.weixin.qq.com"	// "sz
 var MmtlsLongHost = "long.weixin.qq.com"
 var MmtlsLongPort = 80
 
-// ipad 参数 -- 安全的老版本 iPad Air (第5代) iPad13,4 + iPadOS 16.5.1
-var IosBuildVersion = "19H386"
+// ipad 参数 -- 2026-03 最新可用 (iPad Air 第6代 + iPadOS 18.5.1)
+var IosBuildVersion = "22G90"
 var KernelType = "Darwin"
-var KernelVersion = "21.6.0"
-var KernelRelease = "Darwin Kernel Version 21.6.0: Sun Oct 15 00:17:39 PDT 2023; root:xnu-8020.241.42~8/RELEASE_ARM64_T7000"
+var KernelVersion = "24.5.0"
+var KernelRelease = "Darwin Kernel Version 24.5.0: Mon Mar 10 21:45:12 PDT 2026; root:xnu-11215.121.3~7/RELEASE_ARM64_T8110"
 
 // ipad
 //var IPadDeviceType = "iPad iPadOS18.0.1"
@@ -27,10 +27,10 @@ var KernelRelease = "Darwin Kernel Version 21.6.0: Sun Oct 15 00:17:39 PDT 2023;
 //var IPadModel = "iPad16,6"
 //var IPadOsVersion = "18.0.1"
 
-var IPadDeviceType = "iPad Air iPadOS16.5.1"
-var IPadDeviceName = "iPad Air (第5代)"
-var IPadModel = "iPad13,4"
-var IPadOsVersion = "16.5.1"
+var IPadDeviceType = "iPad Air iPadOS18.5.1"
+var IPadDeviceName = "iPad Air (第6代)"
+var IPadModel = "iPad14,10"
+var IPadOsVersion = "18.5.1"
 
 // iphone
 var IPhoneDeviceType = "iPhone iOS18.8.1"
@@ -89,8 +89,8 @@ var MacModel = "MacBookPro16,1"
 var MacOsVersion = "14.5"
 
 // 版本号
-// var IPadVersion = int32(0x18003926)
-var IPadVersion = int32(0x1A004120) // next higher value (N/A). was: 0x18003C20 8.0.60 ==> 0x1A003C20 ==> 0x1A004020
+// var IPadVersion = int32(0x18003926) ==> 0x18003C20 8.0.60 ==> 0x1A003C20 ==> 0x1A004020 ==> 0x1A004120, 0x1A004520, 0x1A004620, 0x1A008020
+var IPadVersion = int32(0x1A005020) //
 
 // var IPadVersion = int32(0x18003B26)  //ipad 0x18003727
 var IPadVersionx = int32(0x18003926) //ipad绕过验证码int32(0x17000523)
