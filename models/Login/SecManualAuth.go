@@ -24,7 +24,17 @@ func SecManualAuth(Data *comm.LoginData) (mm.UnifyAuthResponse, []byte, []byte, 
 		Data.ShortHost = Algorithm.MmtlsShortHost
 	}
 
-	httpclient := Mmtls.GenNewHttpClient(Data.MmtlsKey, Data.ShortHost)
+	// Safely establish or resume MMTLS session
+	var httpclient *Mmtls.HttpClientModel
+	var err error
+	if Data.MmtlsKey == nil {
+		httpclient, Data.MmtlsKey, err = comm.MmtlsInitialize(Data.Proxy, Data.ShortHost)
+		if err != nil {
+			return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("MMTLS Init failed: %v", err)
+		}
+	} else {
+		httpclient = Mmtls.GenNewHttpClient(Data.MmtlsKey, Data.ShortHost)
+	}
 
 	Data.Aeskey = []byte(baseutils.RandSeq(16)) //获取随机密钥
 	accountRequest := &mm.ManualAuthRsaReqData{
@@ -201,7 +211,18 @@ func SecManualAuthAndroid(Data *comm.LoginData) (mm.UnifyAuthResponse, []byte, [
 	if Data.ShortHost == "" {
 		Data.ShortHost = Algorithm.MmtlsShortHost
 	}
-	httpclient := Mmtls.GenNewHttpClient(Data.MmtlsKey, Data.ShortHost)
+
+	// Safely establish or resume MMTLS session
+	var httpclient *Mmtls.HttpClientModel
+	var err error
+	if Data.MmtlsKey == nil {
+		httpclient, Data.MmtlsKey, err = comm.MmtlsInitialize(Data.Proxy, Data.ShortHost)
+		if err != nil {
+			return mm.UnifyAuthResponse{}, nil, nil, nil, &mm.TrustResponse{}, fmt.Errorf("MMTLS Init failed: %v", err)
+		}
+	} else {
+		httpclient = Mmtls.GenNewHttpClient(Data.MmtlsKey, Data.ShortHost)
+	}
 
 	Data.Aeskey = []byte(baseutils.RandSeq(16)) //获取随机密钥
 	accountRequest := &mm.ManualAuthRsaReqData{

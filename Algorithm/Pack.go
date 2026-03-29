@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/binary"
+	"fmt"
 	"hash/adler32"
 	"hash/crc32"
 	"io"
+	"runtime"
+
 	"wechatdll/clientsdk/baseutils"
 	v08 "wechatdll/clientsdk/v08"
 
@@ -120,6 +123,14 @@ func (h *Client) HybridEcdhPackIosUn(Data []byte) *PacketHeader {
 	// Defensive check to prevent index out of bounds panic
 	if len(Data) < 2 {
 		return &PacketHeader{}
+	}
+	if false {
+		// pc is Program Counter, used to get the function name
+		pc, file, line, ok := runtime.Caller(0)
+		if ok {
+			fn := runtime.FuncForPC(pc)
+			fmt.Printf("File: %s, Func: %s, Line: %d\n", file, fn.Name(), line)
+		}
 	}
 
 	var ph PacketHeader

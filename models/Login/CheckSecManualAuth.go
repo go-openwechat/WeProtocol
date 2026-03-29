@@ -151,9 +151,8 @@ func CheckSecManualAuth(Data *comm.LoginData, ShortHost string) models.ResponseR
 		}
 		if Wx_newshort_Host.Len() > 0 {
 			newHost := Wx_newshort_Host.Front().Value.(string)
-			// --- FIX: MUST CLEAR MMTLS STATE ON REDIRECT ---
+			// MUST CLEAR MMTLS STATE ON REDIRECT
 			Data.MmtlsKey = nil
-			// -----------------------------------------------
 			return CheckSecManualAuth(Data, newHost)
 		}
 	}
