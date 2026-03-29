@@ -152,19 +152,19 @@ func GetNonce(iv []byte, seq int) ([]byte, int) {
 }
 
 func UInt16ToBigEndianBytes(val uint16) []byte {
-	var ret []byte
+	ret := make([]byte, 2)
 	binary.BigEndian.PutUint16(ret, val)
 	return ret
 }
 
 func UInt32ToBigEndianBytes(val uint32) []byte {
-	var ret []byte
+	ret := make([]byte, 4)
 	binary.BigEndian.PutUint32(ret, val)
 	return ret
 }
 
 func UInt64ToBigEndianBytes(val uint64) []byte {
-	var ret []byte
+	ret := make([]byte, 8)
 	binary.BigEndian.PutUint64(ret, val)
 	return ret
 }

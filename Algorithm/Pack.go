@@ -48,7 +48,9 @@ func (h *Client) HybridEcdhPackIosEn(Cgi, Uin uint32, Cookies, Data []byte) []by
 	header.Write(proto.EncodeVarint(uint64(rqtx)))
 	header.Write([]byte{0x00})
 	lens := len(header.Bytes())<<2 + 2
-	header.Bytes()[1] = byte(lens)
+	if len(header.Bytes()) >= 2 {
+		header.Bytes()[1] = byte(lens)
+	}
 	header.Write(encryptdata)
 	// log.Println(hex.EncodeToString(header.Bytes()))
 	return header.Bytes()
@@ -107,7 +109,9 @@ func (h *Client) HybridEcdhPackIosEn2(Cgi, Uin uint32, Cookies, Data, loginecdhk
 	header.Write(proto.EncodeVarint(uint64(CalcMsgCrcForData_7019(encryptdata))))
 	header.Write([]byte{0x00})
 	lens := len(header.Bytes())<<2 + 2
-	header.Bytes()[1] = byte(lens)
+	if len(header.Bytes()) >= 2 {
+		header.Bytes()[1] = byte(lens)
+	}
 	header.Write(encryptdata)
 	return header.Bytes()
 }
@@ -301,10 +305,14 @@ func Pack(src []byte, cgi int, uin uint32, sessionkey, cookies, clientsessionkey
 	header.Write([]byte{0x00})                     //占坑
 	if use_compress {
 		lens := (len(header.Bytes()) << 2) + 1
-		header.Bytes()[1] = byte(lens)
+		if len(header.Bytes()) >= 2 {
+			header.Bytes()[1] = byte(lens)
+		}
 	} else {
 		lens := (len(header.Bytes()) << 2) + 2
-		header.Bytes()[1] = byte(lens)
+		if len(header.Bytes()) >= 2 {
+			header.Bytes()[1] = byte(lens)
+		}
 	}
 	header.Write(body)
 	return header.Bytes()

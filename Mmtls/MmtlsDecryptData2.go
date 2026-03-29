@@ -24,8 +24,10 @@ func (httpclient *HttpClientModel) MmtlsDecryptData2(Data []Separatea) []byte {
 				HkdfExpand_handshake.Write(decrypt_serverdata_hash256)
 
 				HkdfExpand_handshake_key := Algorithm.Hkdf_Expand(sha256.New, httpclient.mmtlsClient.Hkdfexpand_pskaccess_key, HkdfExpand_handshake.Bytes(), 28)
-				httpclient.mmtlsClient.Decrptshortmmtlskey = HkdfExpand_handshake_key[:16]
-				httpclient.mmtlsClient.Decrptshortmmtlsiv = HkdfExpand_handshake_key[16:28]
+					if len(HkdfExpand_handshake_key) >= 28 {
+						httpclient.mmtlsClient.Decrptshortmmtlskey = HkdfExpand_handshake_key[:16]
+						httpclient.mmtlsClient.Decrptshortmmtlsiv = HkdfExpand_handshake_key[16:28]
+					}
 			}
 		} else {
 			if v.title == "17" {
@@ -48,6 +50,9 @@ func NewAESGCMDecrypter(Data, key, iv []byte, seq int32, mmtlsType string) []byt
 	businessdata_aad.Write([]byte{0xf1, 0x03})
 	businessdata_aad.Write(baseutils.Int16ToBytes(int16(len(Data))))
 
+	if len(iv) < 12 {
+		return nil
+	}
 	var xorkeyBuffer = bytes.NewReader(iv[8:12])
 	var xorkeyint uint32
 	binary.Read(xorkeyBuffer, binary.BigEndian, &xorkeyint)
