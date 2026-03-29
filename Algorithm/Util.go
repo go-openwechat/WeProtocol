@@ -15,7 +15,7 @@ var MmtlsShortHost = "extshort.weixin.qq.com" // "extshort.weixin.qq.com"	// "sz
 var MmtlsLongHost = "long.weixin.qq.com"
 var MmtlsLongPort = 80
 
-// ipad 参数
+// ipad 参数 -- 安全的老版本 iPad Air (第5代) iPad13,4 + iPadOS 16.5.1
 var IosBuildVersion = "19H386"
 var KernelType = "Darwin"
 var KernelVersion = "21.6.0"
@@ -27,10 +27,10 @@ var KernelRelease = "Darwin Kernel Version 21.6.0: Sun Oct 15 00:17:39 PDT 2023;
 //var IPadModel = "iPad16,6"
 //var IPadOsVersion = "18.0.1"
 
-var IPadDeviceType = "iPad Air iPadOS18.8.1"
-var IPadDeviceName = "iPad Air (第7代)"
-var IPadModel = "iPad14,4"
-var IPadOsVersion = "18.8.1"
+var IPadDeviceType = "iPad Air iPadOS16.5.1"
+var IPadDeviceName = "iPad Air (第5代)"
+var IPadModel = "iPad13,4"
+var IPadOsVersion = "16.5.1"
 
 // iphone
 var IPhoneDeviceType = "iPhone iOS18.8.1"
@@ -90,7 +90,7 @@ var MacOsVersion = "14.5"
 
 // 版本号
 // var IPadVersion = int32(0x18003926)
-var IPadVersion = int32(0x18003b20) // 0x18003C20 8.0.60
+var IPadVersion = int32(0x1A004120) // next higher value (N/A). was: 0x18003C20 8.0.60 ==> 0x1A003C20 ==> 0x1A004020
 
 // var IPadVersion = int32(0x18003B26)  //ipad 0x18003727
 var IPadVersionx = int32(0x18003926) //ipad绕过验证码int32(0x17000523)
